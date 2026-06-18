@@ -51,11 +51,14 @@ class SettingsUI:
         """显示设置界面"""
         if self.window is not None:
             try:
-                self.window.lift()
-                self.window.focus_force()
+                self.window.deiconify()  # 还原窗口
+                self.window.lift()  # 提升到顶层
+                self.window.attributes('-topmost', True)  # 置顶
+                self.window.focus_force()  # 强制焦点
+                return
             except Exception:
-                pass
-            return
+                # 窗口已销毁，重新创建
+                self.window = None
         
         try:
             self.window = tk.Toplevel(self._root)
@@ -69,11 +72,19 @@ class SettingsUI:
             # 设置关闭事件
             self.window.protocol("WM_DELETE_WINDOW", self._on_cancel)
             
+            # 置顶显示
+            self.window.attributes('-topmost', True)
+            
             # 居中显示
             self._center_window()
             
-            # 置顶
-            self.window.attributes('-topmost', True)
+            # 强制显示和焦点
+            self.window.deiconify()
+            self.window.lift()
+            self.window.focus_force()
+            
+            # 延迟再次置顶（确保不被其他窗口挡住）
+            self.window.after(100, lambda: self.window.attributes('-topmost', True))
         except Exception as e:
             print(f"设置界面启动失败: {e}")
     
