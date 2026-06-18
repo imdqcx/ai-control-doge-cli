@@ -80,7 +80,8 @@ def on_settings_save(config: dict):
 def on_exit():
     """退出回调"""
     cleanup()
-    sys.exit(0)
+    # 强制退出进程（sys.exit在守护线程中可能不生效）
+    os._exit(0)
 
 
 def main():

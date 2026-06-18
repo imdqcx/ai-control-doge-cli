@@ -6,10 +6,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Callable, Dict, Any
+import threading
 
 
 class SettingsUI:
     """设置界面"""
+    
+    # 类级别的根窗口（确保只有一个）
+    _root: tk.Tk = None
+    _root_lock = threading.Lock()
     
     def __init__(self, 
                  config: Dict[str, Any], 
@@ -27,34 +32,58 @@ class SettingsUI:
         self.on_save = on_save
         self.on_cancel = on_cancel
         
-        self.window: tk.Tk = None
+        self.window: tk.Toplevel = None
         self.entries: Dict[str, tk.Entry] = {}
         self.vars: Dict[str, tk.Variable] = {}
+        
+        # 确保根窗口存在
+        self._ensure_root()
+    
+    @classmethod
+    def _ensure_root(cls):
+        """确保Tk根窗口存在"""
+        with cls._root_lock:
+            if cls._root is None:
+                cls._root = tk.Tk()
+                cls._root.withdraw()  # 隐藏根窗口
     
     def show(self):
         """显示设置界面"""
         if self.window is not None:
-            self.window.lift()
+            try:
+                self.window.lift()
+                self.window.focus_force()
+            except Exception:
+                pass
             return
         
-        self.window = tk.Tk()
-        self.window.title("🐕 AI Doge Remote — 设置")
-        self.window.geometry("500x600")
-        self.window.resizable(False, False)
-        
-        # 创建界面
-        self._create_widgets()
-        
-        # 设置关闭事件
-        self.window.protocol("WM_DELETE_WINDOW", self._on_cancel)
-        
-        # 居中显示
-        self._center_window()
+        try:
+            self.window = tk.Toplevel(self._root)
+            self.window.title("AI Doge Remote - 设置")
+            self.window.geometry("500x600")
+            self.window.resizable(False, False)
+            
+            # 创建界面
+            self._create_widgets()
+            
+            # 设置关闭事件
+            self.window.protocol("WM_DELETE_WINDOW", self._on_cancel)
+            
+            # 居中显示
+            self._center_window()
+            
+            # 置顶
+            self.window.attributes('-topmost', True)
+        except Exception as e:
+            print(f"设置界面启动失败: {e}")
     
     def hide(self):
         """隐藏设置界面"""
         if self.window:
-            self.window.destroy()
+            try:
+                self.window.destroy()
+            except Exception:
+                pass
             self.window = None
     
     def get_config(self) -> Dict[str, Any]:
@@ -63,12 +92,15 @@ class SettingsUI:
     
     def _center_window(self):
         """窗口居中"""
-        self.window.update_idletasks()
-        width = self.window.winfo_width()
-        height = self.window.winfo_height()
-        x = (self.window.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.window.winfo_screenheight() // 2) - (height // 2)
-        self.window.geometry(f'{width}x{height}+{x}+{y}')
+        try:
+            self.window.update_idletasks()
+            width = self.window.winfo_width()
+            height = self.window.winfo_height()
+            x = (self.window.winfo_screenwidth() // 2) - (width // 2)
+            y = (self.window.winfo_screenheight() // 2) - (height // 2)
+            self.window.geometry(f'{width}x{height}+{x}+{y}')
+        except Exception:
+            pass
     
     def _create_widgets(self):
         """创建界面组件"""
@@ -121,24 +153,6 @@ class SettingsUI:
         quality_label = ttk.Label(quality_frame, textvariable=self.vars["capture.quality"])
         quality_label.pack(side=tk.LEFT, padx=(10, 0))
         
-        # 最大分辨率
-        ttk.Label(capture_frame, text="最大分辨率:").grid(row=2, column=0, sticky=tk.W, pady=5)
-        
-        resolution_frame = ttk.Frame(capture_frame)
-        resolution_frame.grid(row=2, column=1, sticky=tk.W, pady=5)
-        
-        self.vars["capture.max_width"] = tk.StringVar(value=str(self.config.get("capture", {}).get("max_width", 1920)))
-        width_entry = ttk.Entry(resolution_frame, textvariable=self.vars["capture.max_width"], width=8)
-        width_entry.pack(side=tk.LEFT)
-        
-        ttk.Label(resolution_frame, text=" × ").pack(side=tk.LEFT)
-        
-        self.vars["capture.max_height"] = tk.StringVar(value=str(self.config.get("capture", {}).get("max_height", 1080)))
-        height_entry = ttk.Entry(resolution_frame, textvariable=self.vars["capture.max_height"], width=8)
-        height_entry.pack(side=tk.LEFT)
-        
-        ttk.Label(capture_frame, text="(超过此分辨率将等比缩放)").grid(row=3, column=0, columnspan=2, sticky=tk.W)
-        
         # 安全设置
         security_frame = ttk.LabelFrame(main_frame, text="安全设置", padding="10")
         security_frame.pack(fill=tk.X, pady=(0, 10))
@@ -189,16 +203,9 @@ class SettingsUI:
                 return
             
             # 验证质量
-            quality = int(self.vars["capture.quality"].get())
+            quality = int(float(self.vars["capture.quality"].get()))
             if not (1 <= quality <= 100):
                 messagebox.showerror("错误", "JPEG质量必须在 1-100 之间")
-                return
-            
-            # 验证分辨率
-            max_width = int(self.vars["capture.max_width"].get())
-            max_height = int(self.vars["capture.max_height"].get())
-            if max_width <= 0 or max_height <= 0:
-                messagebox.showerror("错误", "分辨率必须大于 0")
                 return
             
             # 更新配置
@@ -206,8 +213,6 @@ class SettingsUI:
             self.config["server"]["host"] = self.vars["server.host"].get()
             self.config["capture"]["format"] = self.vars["capture.format"].get()
             self.config["capture"]["quality"] = quality
-            self.config["capture"]["max_width"] = max_width
-            self.config["capture"]["max_height"] = max_height
             self.config["security"]["api_key"] = self.vars["security.api_key"].get()
             self.config["security"]["notify_on_connect"] = self.vars["security.notify_on_connect"].get()
             
