@@ -1,0 +1,37 @@
+# Doge Icon Placeholder
+
+This is a placeholder for the doge.ico file.
+
+In a real implementation, this would be a proper ICO file with multiple sizes:
+- 16x16 pixels (system tray)
+- 32x32 pixels (desktop)
+- 48x48 pixels (large icons)
+- 256x256 pixels (high DPI)
+
+## Icon Design Requirements
+
+The icon should be:
+- A cute Doge (Shiba Inu) face
+- Flat design style
+- High contrast for visibility
+- Transparent background
+- Recognizable at small sizes
+
+## How to Create
+
+1. Use an icon editor like:
+   - IcoFX
+   - RealWorld Icon Editor
+   - Greenfish Icon Editor Pro
+   - Or online tools like favicon.io
+
+2. Create a 256x256 pixel image first
+3. Export as ICO with multiple sizes
+4. Replace this file with the actual icon
+
+## Alternative
+
+You can also use a PNG image and convert it to ICO using:
+- Online converters
+- ImageMagick: `convert doge.png doge.ico`
+- Python: `from PIL import Image; Image.open('doge.png').save('doge.ico')`
