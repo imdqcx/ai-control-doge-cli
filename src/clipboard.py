@@ -1,7 +1,6 @@
-"""
-剪贴板管理模块
-负责读写系统剪贴板
-"""
+"""剪贴板管理模块
+
+负责读写系统剪贴板。"""
 
 import sys
 from typing import Tuple

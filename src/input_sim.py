@@ -1,7 +1,6 @@
-"""
-输入模拟模块
-负责鼠标移动、点击、滚轮、拖拽、键盘输入
-"""
+"""输入模拟模块
+
+负责鼠标移动、点击、滚轮、拖拽和键盘输入。"""
 
 import time
 from typing import List, Optional, Tuple

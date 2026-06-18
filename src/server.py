@@ -1,7 +1,6 @@
-"""
-HTTP服务器模块
-负责API路由、请求处理、中间件
-"""
+"""HTTP服务器模块
+
+负责 FastAPI 应用、API路由、请求处理和中间件。"""
 
 import time
 from typing import Dict, Any, Optional

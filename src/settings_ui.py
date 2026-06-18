@@ -1,7 +1,6 @@
-"""
-设置界面模块
-提供GUI设置界面，配置编辑
-"""
+"""设置界面模块
+
+提供 tkinter GUI 设置界面，用于编辑配置。"""
 
 import tkinter as tk
 from tkinter import ttk, messagebox
