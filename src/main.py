@@ -4,18 +4,33 @@ AI Doge Remote - 主入口
 """
 
 import sys
+import os
+
+# 打包后支持：将src目录加入sys.path
+if getattr(sys, 'frozen', False):
+    # PyInstaller打包后的路径
+    base_dir = os.path.dirname(sys.executable)
+    src_dir = os.path.join(base_dir, 'src')
+    if os.path.exists(src_dir):
+        sys.path.insert(0, src_dir)
+    else:
+        sys.path.insert(0, base_dir)
+else:
+    # 开发模式：将当前目录的父目录加入path
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import signal
 import threading
 import time
 from pathlib import Path
 
-from .config import ConfigManager, get_config_path
-from .server import APIServer
-from .capture import ScreenCapture
-from .input_sim import InputSimulator
-from .tray import SystemTray
-from .settings_ui import SettingsUI
-from .logger import setup_logging, get_logger
+from src.config import ConfigManager, get_config_path
+from src.server import APIServer
+from src.capture import ScreenCapture
+from src.input_sim import InputSimulator
+from src.tray import SystemTray
+from src.settings_ui import SettingsUI
+from src.logger import setup_logging, get_logger
 
 # 全局变量
 config_manager: ConfigManager = None
@@ -24,12 +39,13 @@ system_tray: SystemTray = None
 settings_ui: SettingsUI = None
 start_time: float = 0
 
-logger = get_logger(__name__)
+logger = None
 
 
 def signal_handler(signum, frame):
     """信号处理器，用于优雅退出"""
-    logger.info("收到退出信号，正在退出...")
+    if logger:
+        logger.info("收到退出信号，正在退出...")
     cleanup()
     sys.exit(0)
 
@@ -69,7 +85,7 @@ def on_exit():
 
 def main():
     """主函数"""
-    global config_manager, api_server, system_tray, settings_ui, start_time
+    global config_manager, api_server, system_tray, settings_ui, start_time, logger
     
     # 设置日志
     setup_logging()
@@ -115,12 +131,12 @@ def main():
     system_tray.update_status("运行中", port)
     
     logger.info("=" * 50)
-    logger.info("🐕 AI Doge Remote 已启动")
+    logger.info("AI Doge Remote 已启动")
     logger.info(f"API地址: http://{host}:{port}")
     logger.info(f"API文档: http://localhost:{port}/docs")
     logger.info("=" * 50)
     
-    print(f"\n🐕 AI Doge Remote 已启动")
+    print(f"\nAI Doge Remote 已启动")
     print(f"API地址: http://{host}:{port}")
     print(f"API文档: http://localhost:{port}/docs")
     print(f"配置文件: {config_path}")

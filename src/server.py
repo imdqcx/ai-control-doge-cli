@@ -10,10 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 
-from .capture import ScreenCapture
-from .input_sim import InputSimulator
-from .clipboard import ClipboardManager
-from .logger import get_logger
+from src.capture import ScreenCapture
+from src.input_sim import InputSimulator
+from src.clipboard import ClipboardManager
+from src.logger import get_logger
 
 logger = get_logger(__name__)
 
