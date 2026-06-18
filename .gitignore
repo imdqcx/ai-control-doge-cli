@@ -77,6 +77,10 @@ config.json
 logs/
 screenshots/
 temp/
+test_*.jpg
+test_*.png
+debug_*.jpg
+debug_*.png
 
 # PyInstaller output
 dist/

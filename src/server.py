@@ -5,11 +5,10 @@ HTTP服务器模块
 
 import time
 from typing import Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, Depends, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 import uvicorn
-import io
 
 from .capture import ScreenCapture
 from .input_sim import InputSimulator
@@ -53,7 +52,7 @@ class APIServer:
         """创建FastAPI应用"""
         app = FastAPI(
             title="AI Doge Remote",
-            description="AI远程桌面控制被控端",
+            description="AI远程桌面控制被控端 - 为AI Agent提供远程桌面控制能力",
             version="1.0.0",
             docs_url="/docs",
             redoc_url="/redoc"
@@ -74,7 +73,7 @@ class APIServer:
             }
         
         @self.app.get("/manual")
-        async def get_manual(format: str = "plain", lang: str = "en"):
+        async def get_manual(format: str = "plain", lang: str = "zh"):
             """获取AI说明书"""
             # 动态生成说明书
             screen_info = self.capture.get_screen_info()
@@ -99,7 +98,7 @@ class APIServer:
             quality: int = None,
             scale: float = 1.0,
             region: str = None,
-            cursor: bool = True
+            cursor: bool = False
         ):
             """获取屏幕截图"""
             try:
@@ -402,8 +401,9 @@ class APIServer:
             api_key = self.config.get("security", {}).get("api_key", "")
             
             if api_key:
-                # 跳过健康检查和文档端点
-                if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json"]:
+                # 跳过不需要认证的端点（健康检查、文档、说明书）
+                skip_paths = ["/health", "/docs", "/redoc", "/openapi.json", "/manual"]
+                if request.url.path in skip_paths:
                     return await call_next(request)
                 
                 # 检查Authorization头

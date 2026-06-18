@@ -9,13 +9,13 @@ import threading
 import time
 from pathlib import Path
 
-from .config import ConfigManager
+from .config import ConfigManager, get_config_path
 from .server import APIServer
 from .capture import ScreenCapture
 from .input_sim import InputSimulator
 from .tray import SystemTray
 from .settings_ui import SettingsUI
-from .logger import setup_logging
+from .logger import setup_logging, get_logger
 
 # 全局变量
 config_manager: ConfigManager = None
@@ -24,10 +24,12 @@ system_tray: SystemTray = None
 settings_ui: SettingsUI = None
 start_time: float = 0
 
+logger = get_logger(__name__)
+
 
 def signal_handler(signum, frame):
     """信号处理器，用于优雅退出"""
-    print("\n正在退出...")
+    logger.info("收到退出信号，正在退出...")
     cleanup()
     sys.exit(0)
 
@@ -71,14 +73,22 @@ def main():
     
     # 设置日志
     setup_logging()
+    logger = get_logger(__name__)
     
     # 记录启动时间
     start_time = time.time()
     
-    # 初始化配置管理器
-    config_path = Path.home() / ".aidogeremote" / "config.json"
+    # 初始化配置管理器（使用PRD规范的路径）
+    config_path = get_config_path()
+    logger.info(f"配置文件路径: {config_path}")
+    
     config_manager = ConfigManager(config_path)
     config = config_manager.load()
+    
+    # 获取服务器配置
+    server_config = config.get("server", {})
+    host = server_config.get("host", "0.0.0.0")
+    port = server_config.get("port", 8765)
     
     # 初始化API服务器
     api_server = APIServer(config)
@@ -102,11 +112,19 @@ def main():
     server_thread.start()
     
     # 更新托盘状态
-    system_tray.update_status("运行中", config.get("server", {}).get("port", 8765))
+    system_tray.update_status("运行中", port)
     
-    print(f"AI Doge Remote 已启动")
-    print(f"API地址: http://localhost:{config.get('server', {}).get('port', 8765)}")
-    print(f"API文档: http://localhost:{config.get('server', {}).get('port', 8765)}/docs")
+    logger.info("=" * 50)
+    logger.info("🐕 AI Doge Remote 已启动")
+    logger.info(f"API地址: http://{host}:{port}")
+    logger.info(f"API文档: http://localhost:{port}/docs")
+    logger.info("=" * 50)
+    
+    print(f"\n🐕 AI Doge Remote 已启动")
+    print(f"API地址: http://{host}:{port}")
+    print(f"API文档: http://localhost:{port}/docs")
+    print(f"配置文件: {config_path}")
+    print(f"\n程序将在系统托盘运行，右键图标可打开设置或退出\n")
     
     # 保持主线程运行
     try:

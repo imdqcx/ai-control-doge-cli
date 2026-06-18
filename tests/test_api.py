@@ -294,8 +294,9 @@ class TestErrorHandling:
         assert response.status_code == 500
         
         data = response.json()
-        assert "error" in data
-        assert data["error"]["code"] == "SCREEN_CAPTURE_FAILED"
+        assert "detail" in data
+        assert "error" in data["detail"]
+        assert data["detail"]["error"]["code"] == "SCREEN_CAPTURE_FAILED"
 
 
 class TestAuthentication:

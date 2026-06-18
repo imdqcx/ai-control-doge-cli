@@ -12,13 +12,16 @@ import os
 class ConfigManager:
     """配置管理器"""
     
-    def __init__(self, config_path: Path):
+    def __init__(self, config_path: Path = None):
         """
         初始化配置管理器
         
         Args:
-            config_path: 配置文件路径
+            config_path: 配置文件路径，None则使用默认路径
         """
+        if config_path is None:
+            config_path = get_config_path()
+        
         self.config_path = config_path
         self.config: Dict[str, Any] = {}
         self._ensure_config_dir()
@@ -136,9 +139,9 @@ class ConfigManager:
             },
             "capture": {
                 "format": "jpeg",
-                "quality": 80,
-                "max_width": 1920,
-                "max_height": 1080
+                "quality": 90,
+                "max_width": 0,
+                "max_height": 0
             },
             "security": {
                 "api_key": "",
@@ -162,10 +165,22 @@ class ConfigManager:
 
 
 def get_config_path() -> Path:
-    """获取配置文件路径"""
+    """
+    获取配置文件路径
+    
+    优先级:
+    1. 环境变量 AIDOGE_CONFIG
+    2. %APPDATA%\\AIDogeRemote\\config.json (PRD规范)
+    3. ~/.aidogeremote/config.json (回退)
+    """
     # 优先使用环境变量
     if "AIDOGE_CONFIG" in os.environ:
         return Path(os.environ["AIDOGE_CONFIG"])
     
-    # 默认路径
+    # 使用 %APPDATA% 路径 (PRD规范)
+    appdata = os.environ.get("APPDATA")
+    if appdata:
+        return Path(appdata) / "AIDogeRemote" / "config.json"
+    
+    # 回退到用户主目录
     return Path.home() / ".aidogeremote" / "config.json"

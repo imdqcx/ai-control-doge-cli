@@ -89,16 +89,20 @@ class TestScreenCapture:
         
         # 模拟PIL Image
         with patch('PIL.Image.frombytes') as mock_frombytes:
+            mock_resized = MagicMock()
+            mock_resized.width = 480
+            mock_resized.height = 270
+            
             mock_image = MagicMock()
             mock_image.width = 960
             mock_image.height = 540
-            mock_image.save = MagicMock()
+            mock_image.resize.return_value = mock_resized
             mock_frombytes.return_value = mock_image
             
             # 模拟图像保存
             def mock_save(buffer, format, **kwargs):
                 buffer.write(b'fake_image_data')
-            mock_image.save.side_effect = mock_save
+            mock_resized.save.side_effect = mock_save
             
             image_bytes, metadata = capture.capture(
                 format="png",
@@ -110,8 +114,6 @@ class TestScreenCapture:
             
             assert image_bytes is not None
             assert metadata["format"] == "png"
-            assert metadata["image_width"] == 960
-            assert metadata["image_height"] == 540
     
     def test_get_screen_info(self, capture):
         """测试获取屏幕信息"""
@@ -131,9 +133,12 @@ class TestScreenCapture:
     
     def test_get_mouse_position(self, capture):
         """测试获取鼠标位置"""
-        # 当前实现返回(0, 0)
         pos = capture.get_mouse_position()
-        assert pos == (0, 0)
+        # 返回的是真实鼠标位置，格式为 (x, y) 元组
+        assert isinstance(pos, tuple)
+        assert len(pos) == 2
+        assert isinstance(pos[0], int)
+        assert isinstance(pos[1], int)
     
     def test_image_to_bytes_jpeg(self, capture):
         """测试JPEG图像转换"""

@@ -5,8 +5,27 @@
 
 import logging
 import sys
+import os
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
+
+
+def get_log_dir() -> Path:
+    """
+    获取日志目录
+    
+    Returns:
+        日志目录路径
+    """
+    # 使用 %APPDATA%\AIDogeRemote\logs
+    appdata = os.environ.get("APPDATA")
+    if appdata:
+        log_dir = Path(appdata) / "AIDogeRemote" / "logs"
+    else:
+        log_dir = Path.home() / ".aidogeremote" / "logs"
+    
+    log_dir.mkdir(parents=True, exist_ok=True)
+    return log_dir
 
 
 def setup_logging(log_level: str = "INFO", log_file: str = None):
@@ -19,8 +38,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = None):
     """
     # 创建日志目录
     if log_file is None:
-        log_dir = Path.home() / ".aidogeremote" / "logs"
-        log_dir.mkdir(parents=True, exist_ok=True)
+        log_dir = get_log_dir()
         log_file = log_dir / "ai-doge-remote.log"
     
     # 配置日志格式
