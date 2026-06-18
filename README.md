@@ -175,8 +175,8 @@ MIT License
 
 ## 联系方式
 
-- 项目主页：https://github.com/ai-doge/ai-doge-remote
-- 问题反馈：https://github.com/ai-doge/ai-doge-remote/issues
+- 项目主页：https://github.com/imdqcx/ai-control-doge-cli
+- 问题反馈：https://github.com/imdqcx/ai-control-doge-cli/issues
 
 ---
 
