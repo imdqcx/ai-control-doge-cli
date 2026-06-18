@@ -36,10 +36,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ai-doge/ai-doge-remote"
-Documentation = "https://github.com/ai-doge/ai-doge-remote#readme"
-Repository = "https://github.com/ai-doge/ai-doge-remote"
-Issues = "https://github.com/ai-doge/ai-doge-remote/issues"
+Homepage = "https://github.com/imdqcx/ai-control-doge-cli"
+Documentation = "https://github.com/imdqcx/ai-control-doge-cli#readme"
+Repository = "https://github.com/imdqcx/ai-control-doge-cli"
+Issues = "https://github.com/imdqcx/ai-control-doge-cli/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
